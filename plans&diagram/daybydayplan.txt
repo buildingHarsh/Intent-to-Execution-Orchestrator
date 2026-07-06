@@ -1,0 +1,166 @@
+To keep things completely clear, we are expanding each single day into a meticulous, granular task list. This ensures you never get stuck staring at a blank terminal screen wondering what line of code to write next.
+
+---
+
+## Phase 1: Database & Core Contract Design (Days 1–5)
+
+### Day 1: PostgreSQL Setup and Table Architecture
+
+* **Task 1.1:** Install PostgreSQL locally using your preferred method (Docker, Homebrew, or the official installer).
+* **Task 1.2:** Initialize a new database cluster and create a database named `nexus_fabric`. Open your SQL client (pgAdmin, DBeaver, or terminal psql).
+* **Task 1.3:** Create the `intents` table to log the incoming text prompt from the user. Include columns for unique ID, raw string, status tracking strings (`PENDING`, `PLANNING`, `COMPLETED`), and automated timestamps.
+* **Task 1.4:** Create the `execution_steps` table. Establish a explicit foreign key relation back to `intents(id)`. Add numerical columns for sorting order, text names for downstream targets, generic JSONB payload storage, and error string limits.
+* **Task 1.5:** Create the `audit_logs` security table. Make sure it stores historical entries detailing exact moments of authorization, execution failures, or manual overrides.
+* **Task 1.6:** Run dummy SQL `INSERT` statements manually on all three tables to guarantee constraints, keys, and data types accept records perfectly.
+
+### Day 2: Building Mock External Corporate Targets
+
+* **Task 2.1:** Initialize a lightweight standalone directory called `/mock-infrastructure` outside of your core project. Run `npm init -y` and install `express`.
+* **Task 2.2:** Write an Express app displaying a mock CRM endpoint: `GET /crm/customers/:id`. Hardcode it to return simulated JSON payloads containing a name, email address, and customer lifetime tier value.
+* **Task 2.3:** Write a mock billing endpoint: `POST /billing/refunds`. Configure it to receive an order ID and numeric amount, returning a randomized unique transaction ID string after a simulated 500ms processing delay.
+* **Task 2.4:** Write a mock notification endpoint: `POST /notifications/email`. Configure it to read incoming email bodies and log them cleanly out to your console window to represent an outbound message layout.
+* **Task 2.5:** Boot this mock server up on port `3000` and use an HTTP client (like Postman or cURL) to call each route, verifying your data shapes match.
+
+### Day 3: MuleSoft RAML API Specifications
+
+* **Task 3.1:** Open Anypoint Studio. Create a brand new Mule Project named `nexus-adapter-runtime`.
+* **Task 3.2:** Inside the project structure, locate or create your API specification file using RAML 1.0 notation.
+* **Task 3.3:** Define a structural, single entry endpoint matching `/execute-task`. Specify that it exclusively handles incoming `POST` verbs.
+* **Task 3.4:** Set up the RAML validation schema requiring exactly three items inside the request body: `target_system` (string), `action_name` (string), and `payload` (type object).
+* **Task 3.5:** Add formal mock responses for status code 200 (returning transaction successes) and status code 400/500 (returning failure wrappers), ensuring compilation passes without errors.
+
+### Day 4: MuleSoft Core Routing and Scaffolding
+
+* **Task 4.1:** Use the APIkit scaffolding feature in Anypoint Studio to automatically turn yesterday's RAML file into operational Mule flow files.
+* **Task 4.2:** Drag a standard `Choice Router` processor module from the Mule palette window into your generated post execution flow block.
+* **Task 4.3:** Set your choice expression statement to evaluate the inbound body string property: `#[payload.target_system == 'CRM']`, `#[payload.target_system == 'BILLING']`, and a default path.
+* **Task 4.4:** Drag three unique `Sub-Flow` wrappers into your project tree layout. Name them explicitly after your downstream subsystems: `crm-subflow`, `billing-subflow`, and `email-subflow`.
+* **Task 4.5:** Inside each sub-flow block, place a dummy `Set Payload` component that responds back with plain text confirmation values to indicate successful internal message routing logic. Run your Mule app locally.
+
+### Day 5: Database Connection from Mule Runtime
+
+* **Task 5.1:** Open Anypoint Exchange tab inside Studio, find the official Database Connector module asset package, and add it into your local project environment.
+* **Task 5.2:** Add a global configuration element for database connection pools. Supply your server values: host address, port `5432`, your user account credentials, and database name.
+* **Task 5.3:** Create a standalone Mule flow called `write-audit-trail-flow`. Drag a database `Insert` action component inside it.
+* **Task 5.4:** Write your formal parameterized SQL statement directly inside the database component query window pointing to `audit_logs`. Use DataWeave notations to cleanly assign parameters: `#[payload.intentId]`, `#[payload.action]`.
+* **Task 5.5:** Deploy the application runtime and trigger the route via an external client to prove Mule soft-inserts structured logs directly into PostgreSQL.
+
+---
+
+## Phase 2: Building the MCP Server Brain (Days 6–10)
+
+### Day 6: Setting up the Model Context Protocol Workspace
+
+* **Task 6.1:** Create a root directory named `/nexus-mcp-server`. Open a fresh terminal environment and run `npm init -y` alongside initializing a TypeScript config file.
+* **Task 6.2:** Install the core dependency package explicitly: `npm install @modelcontextprotocol/sdk`. Install secondary developer packages like `typescript` and node runtime typing definitions.
+* **Task 6.3:** Write a file named `src/index.ts`. Import the base `Server` instance model properties straight from the official SDK framework layout.
+* **Task 6.4:** Configure standard input/output (`stdio`) streaming transport pipes inside the node runtime block, which serves as the foundational communication channel for external agents.
+* **Task 6.5:** Write a build pipeline script compiling your source directories out to a clean distribution folder, verifying the runtime boots without crashing your active console stream.
+
+### Day 7: Designing the `plan_intent` Core Automation Tool
+
+* **Task 7.1:** Inside your server initialization file, locate the registration array schema block tracking your available tool mechanisms.
+* **Task 7.2:** Define a new structural object tracking the name literal `plan_intent`. Add description documentation fields describing it as a layout planner.
+* **Task 7.3:** Write a strict validation parameter object using basic JSON Schema design patterns enforcing a mandatory input requirement named `prompt`.
+* **Task 7.4:** Integrate an outgoing LLM application call inside your local tool execution block. Supply structured instructions enforcing a strict output array constraint format.
+* **Task 7.5:** Mock a static structured array output within the execution logic containing explicit tasks: checking status data arrays, validating accounting profiles, and updating outbound messaging hooks to verify structural parsing behaves cleanly.
+
+### Day 8: Binding MCP Tool Processing directly to PostgreSQL
+
+* **Task 8.1:** Add the official native PostgreSQL database connection driver package to your Node project directory layout using `npm install pg`.
+* **Task 8.2:** Set up an isolated database configuration utility client tracking your structural connection settings securely.
+* **Task 8.3:** Update the internal execution code block nested inside your active `plan_intent` tool framework.
+* **Task 8.4:** When an incoming string request arrives, run an `INSERT` command inside your database tracking table to capture the core target item, then extract its newly created database key reference value.
+* **Task 8.5:** Loop over each task entry inside the array generated by the AI planner, appending execution references to your tables, verifying your records save sequentially.
+
+### Day 9: Execution Control and Status Tracking Tools
+
+* **Task 9.1:** Define a brand new, secondary tool profile registration configuration string labeled `fetch_pending_steps`.
+* **Task 9.2:** Implement an underlying raw query tracking routine matching `SELECT * FROM execution_steps WHERE status = 'PENDING' ORDER BY step_order ASC` to pull next-in-line activities.
+* **Task 9.3:** Define a third processing tool blueprint configuration layout string tagged `update_step_status`.
+* **Task 9.4:** Configure validation parameters for this tool to accept two input components: a numeric database index key, and an updating evaluation phrase status message layout.
+* **Task 9.5:** Write your underlying database transaction logic updating execution milestones based on runtime events.
+
+### Day 10: Complete Integration Framework Check
+
+* **Task 10.1:** Open your local configuration file for your AI client app (like Claude Desktop) to add your custom server to its runtime environments.
+* **Task 10.2:** Write a complete relative mapping link string pointing directly to your compiled build output script file.
+* **Task 10.3:** Launch your developer client interface. Ensure that your custom extension buttons display cleanly on the control panels.
+* **Task 10.4:** Submit a sample complex sentence test case. Verify that your system automatically decomposes the task and populates your backend tracking rows.
+
+---
+
+## Phase 3: Crafting the Operator Dashboard (Days 11–15)
+
+### Day 11: Svelte Project Architecture & Framework Layouts
+
+* **Task 11.1:** Open a fresh terminal block, jump up out of your backend workspace files, and initialize a Svelte instance via `npm create svelte@latest nexus-console`. Select a single page app setup layout.
+* **Task 11.2:** Initialize Tailwind CSS utilities inside your project ecosystem directory, ensuring config paths look straight into the active `.svelte` rendering files.
+* **Task 11.3:** Build a persistent navigational structural sidebar pane displaying operational tracking link tabs.
+* **Task 11.4:** Put together a clean, polished layout area on the right side of the screen containing header trackers showing connected database health parameters.
+
+### Day 12: Building the Operational Web API Adapter Layer
+
+* **Task 12.1:** Create an isolated server-side backend routing script block (like an Express server or SvelteKit endpoint directory files) to act as a bridge between the frontend and database.
+* **Task 12.2:** Formulate a new `GET /api/intents` route. Write a SQL connection query fetching historical intents sorted descending by generation time milestones.
+* **Task 12.3:** Formulate an accompanying context route: `GET /api/intents/:id/steps`. Hook it up to fetch all sequential workflows bound to that parent ID.
+* **Task 12.4:** Test these pathways directly in your browser or a network testing tool to confirm JSON objects stream without cross-origin configuration errors.
+
+### Day 13: Layout Processing and Interactive Graph Visualizers
+
+* **Task 13.1:** Create a main control panel view file inside your UI directory path. Put down a large text field allowing human operators to enter direct action intent prompts.
+* **Task 13.2:** Wire up an active click callback binding tracking submission inputs, forwarding text values over to your database system stack.
+* **Task 13.3:** Build an elegant step execution visualization interface using basic structural grid lists.
+* **Task 13.4:** Map out conditional dynamic Tailwind style rules assigning cell backgrounds based on item states: background grey for `PENDING`, pulsing yellow frames for `RUNNING`, deep green grids for `COMPLETED`.
+
+### Day 14: Integrating Safety Gates and Human Approval Interfaces
+
+* **Task 14.1:** Go back into your PostgreSQL schema environment and append an explicit boolean flag component labeled `requires_approval` defaulting to `FALSE`.
+* **Task 14.2:** Inside your frontend rendering panels, write a checking conditional rule reading your step data arrays. If a step lists as true and matches an `AWAITING_APPROVAL` status, show an explicit authorization toolbar pane.
+* **Task 14.3:** Mount two action control button tags on the view pane: a green "Authorize Action" element, and a crimson "Abort Stream" element.
+* **Task 14.4:** Build a backend endpoint route handling updates from these interface components, shifting row properties over to `APPROVED` upon confirmation clicks.
+
+### Day 15: Deep Trace Audit History Viewers
+
+* **Task 15.1:** Set up a secondary navigation directory component screen labeled `AuditHistory.svelte`.
+* **Task 15.2:** Set up a clean data connection hook that periodically fetches update elements straight out of the `audit_logs` table.
+* **Task 15.3:** Design a neat vertical line log view interface block layout using custom CSS elements to represent a running technical timeline stream.
+* **Task 15.4:** Render precise, small payload snippets within collapsible tracking drawers so developers can expand specific items to inspect exact transaction properties.
+
+---
+
+## Phase 4: Integration Engine & Resilience (Days 16–20)
+
+### Day 16: Implementing Real Outbound Connections in MuleSoft
+
+* **Task 16.1:** Return to your core Anypoint Studio interface files. Open your target subflow file definitions created during the first phase of setup.
+* **Task 16.2:** Drag real `HTTP Request` connector nodes into your workspaces, replacing old dummy configuration variables.
+* **Task 16.3:** Map your outbound port routing metrics to read matching server values pointing to your mock ports created on Day 2 (`localhost:3000`).
+* **Task 16.4:** Place an explicit `Transform Message` processor right before your HTTP call blocks to construct outbound payloads matching the external target API contracts.
+
+### Day 17: Engineering the Automated Polling Run-Loop
+
+* **Task 17.1:** Inside your central orchestration backend folder, write a dedicated script file tasked with driving execution flows named `orchestrator-loop.js`.
+* **Task 17.2:** Use a basic scheduling loop script setup that executes a query every few seconds checking for steps marked as `APPROVED` or ready for action.
+* **Task 17.3:** If eligible items pop up, run an internal script process marking that step's state as `RUNNING` inside the database to lock it down against duplicate processing runs.
+* **Task 17.4:** Trigger an HTTP request forwarding that step's package structure to your live MuleSoft route (`/execute-task`). Catch the response from Mule and update the step to `COMPLETED` in the database.
+
+### Day 18: Fault Isolation, Error Interception, and Retries
+
+* **Task 18.1:** Open your MuleSoft error management configuration properties. Create a global error handling workflow scheme using an `On Error Propagate` component block.
+* **Task 18.2:** Set up the error catching system to capture network timeouts or remote application exceptions.
+* **Task 18.3:** Add an internal database transaction step within the failure chain that writes directly to `execution_steps`, updating the step state to `FAILED` and logging the precise error payload details.
+* **Task 18.4:** Modify your orchestrator polling loop script to catch these failures, write an entry to the audit log table, and halt subsequent downstream dependencies to isolate the blast radius.
+
+### Day 19: End-to-End Execution Hardening
+
+* **Task 19.1:** Launch every independent structural unit concurrently across your machine terminals: DB, Node API, Mock Infrastructure, Mule, MCP App, and Svelte Console.
+* **Task 19.2:** Execute a successful standard order refund run. Check that all components transition smoothly to green in under 3 seconds.
+* **Task 19.3:** Execute an identical scenario where you manually force a network drop on your mock server apps. Verify that your UI flags red blocks clearly, freezes downstream progress safely, and updates the database without corrupting state data.
+
+### Day 20: Project Portfolio Cleanup and Documentation Wrap
+
+* **Task 20.1:** Clean up all redundant test files, print logs, and commented-out code blocks across your repositories.
+* **Task 20.2:** Create a comprehensive `README.md` at the project's root folder layout.
+* **Task 20.3:** Draw a clean, complete text-based architecture chart mapping out exactly how requests flow from the Svelte interface down to your background adapters.
+* **Task 20.4:** Write clear setup instructions listing precise commands needed to stand up the database, install package references, and run the developer build streams. You are now ready to showcase a production-grade enterprise platform project!
