@@ -1,0 +1,38 @@
+openapi: 3.0.0
+info:
+    version: 1.0.0
+    title: nexus-execution-api
+paths:
+    /execution-task:
+        post:
+            summary: Process an integration task asynchronously through MuleSoft adapters
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - intent_id
+                                - step_id
+                                - target_system
+                                - action_name
+                                - payload
+                            properties:
+                                intent_id:
+                                    type: integer
+                                step_id:
+                                    type: integer
+                                target_system:
+                                    type: string
+                                action_name:
+                                    type: string
+                                payload:
+                                    type: object
+            responses:
+                '202':
+                    description: Task accepted for background processing
+                '400':
+                    description: Invalid input
+                '500':
+                    description: Internal server error

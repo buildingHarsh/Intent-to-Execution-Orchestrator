@@ -1,0 +1,11 @@
+{
+  "main": "nexus-execution-api.yaml",
+  "name": "nexus-execution-api",
+  "classifier": "oas",
+  "organizationId": "4124ea75-de88-403c-87d6-2490bbf0be12",
+  "descriptorVersion": "1.0.0",
+  "tags": [],
+  "groupId": "4124ea75-de88-403c-87d6-2490bbf0be12",
+  "assetId": "nexus-execution-api",
+  "version": "1.0.0-SNAPSHOT"
+}
