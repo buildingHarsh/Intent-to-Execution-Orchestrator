@@ -1,4 +1,5 @@
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <configuration-properties doc:name="Configuration properties" file="properties/config.yaml"/>
     <http:listener-config name="nexus-execution-api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081"></http:listener-connection>
     </http:listener-config>
@@ -173,10 +174,11 @@ output application/json
         <logger doc:id="wfqalc" doc:name="flow started" message="#[&quot;crm subflow started&quot;]"></logger>
         <http:request config-ref="Request-config" doc:id="ierlxb" doc:name="Request" path="/crm/customers/{id}">
             <http:body><![CDATA[payload]]></http:body>
-            <http:uri-params><![CDATA[#[output application/java
+            <http:uri-params><![CDATA[#[%dw 2.0
+output application/java
 ---
 {
-	"id" : payload.payload.customer_id
+    "id" : payload.payload.customer_id
 }]]]></http:uri-params>
         </http:request>
         <logger doc:id="njmfaq" doc:name="flow ended" message="#[&quot;crm subflow started&quot;]"></logger>

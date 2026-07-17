@@ -1,20 +1,26 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "type": "mule-xml-debugger",
-        "request": "launch",
-        "name": "Run Mule Application",
-        "noDebug": true,
-        "mule.projects": ["${workspaceFolder}"],
-        "mule.runtime.args": "${config:mule.runtime.defaultArguments}"
-      },
-      {
-        "type": "mule-xml-debugger",
-        "request": "launch",
-        "name": "Debug Mule Application",
-        "mule.projects": ["${workspaceFolder}"],
-        "mule.runtime.args": "${config:mule.runtime.defaultArguments}"
-      }
-    ]
-  }
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "mule-xml-debugger",
+      "request": "launch",
+      "name": "Run nexus-adapter-runtime",
+      "noDebug": true,
+      "mule.projects": [
+        "c:\\Users\\Harsh\\Desktop\\Project\\Intent-to-Execution-Orchestrator\\mule\\nexus-adapter-runtime"
+      ],
+      "java.home": "C:\\Users\\Harsh\\AnypointCodeBuilder\\java\\jdk-17.0.13+11",
+      "mule.runtime.args": "${config:mule.runtime.defaultArguments}"
+    },
+    {
+      "type": "mule-xml-debugger",
+      "request": "launch",
+      "name": "Debug nexus-adapter-runtime",
+      "mule.projects": [
+        "c:\\Users\\Harsh\\Desktop\\Project\\Intent-to-Execution-Orchestrator\\mule\\nexus-adapter-runtime"
+      ],
+      "java.home": "C:\\Users\\Harsh\\AnypointCodeBuilder\\java\\jdk-17.0.13+11",
+      "mule.runtime.args": "${config:mule.runtime.defaultArguments}"
+    }
+  ]
+}

@@ -58,7 +58,7 @@ app.post('/notifications/email', (req, res) => {
 // ==========================================
 // Task 2.5: Boot the Server
 // ==========================================
-const PORT = 3000;
+const PORT = 3001;
 app.listen(PORT, () => {
     console.log(`Mock infrastructure running on http://localhost:${PORT}`);
 });
