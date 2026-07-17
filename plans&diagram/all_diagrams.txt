@@ -1,0 +1,104 @@
+NexusFabric Architecture Diagrams
+
+Note: GitHub natively supports Mermaid.js. Viewing this file on GitHub will automatically render the code blocks below as visual diagrams.
+
+1. System Sequence Diagram (The Flow of Data)
+
+This diagram illustrates the complete "Happy Path" workflow, demonstrating the separation of planning (MCP), the orchestrator loop, the asynchronous MuleSoft hand-off, and the webhook callbacks.
+
+sequenceDiagram
+    autonumber
+    actor User as Operator
+    participant UI as SvelteKit UI (5173)
+    participant Node as Node Orchestrator (3002)
+    participant MCP as MCP Server (Node)
+    participant DB as PostgreSQL (5432)
+    participant Mule as MuleSoft Adapter (8081)
+    participant API as Mock Target APIs (3001)
+
+    %% Phase 1: Planning & Intake
+    rect rgb(240, 248, 255)
+        Note over User, DB: Phase 1: AI Planning & State Ingestion
+        User->>UI: Input: "Refund $45 for Order 123"
+        UI->>Node: POST /api/intents
+        Node->>MCP: Call Tool: plan_intent(prompt)
+        Note right of MCP: AI decomposes prompt into structured JSON
+        MCP->>DB: INSERT INTO intents
+        MCP->>DB: INSERT INTO execution_steps (PENDING)
+        MCP-->>Node: Return Execution Graph
+        Node-->>UI: 200 OK (Workflow Created)
+    end
+
+    %% Phase 2: Execution Loop & Pessimistic Locking
+    rect rgb(255, 250, 240)
+        Note over Node, DB: Phase 2: The Orchestrator Run-Loop
+        loop Every 2 Seconds
+            Node->>DB: SELECT * FROM execution_steps ... FOR UPDATE SKIP LOCKED
+            DB-->>Node: Returns Step 1 (e.g., CRM Verify)
+            Node->>DB: UPDATE status = 'RUNNING'
+        end
+    end
+
+    %% Phase 3: MuleSoft Async Handoff
+    rect rgb(245, 255, 250)
+        Note over Node, API: Phase 3: Asynchronous Execution & Integration
+        Node->>Mule: POST /execute-task (Send Step Payload)
+        Note right of Mule: Validates against OAS 3.0 Contract
+        Mule-->>Node: 202 Accepted (Frees up Node.js thread)
+        
+        Mule->>API: HTTP Request (Transform to target schema)
+        API-->>Mule: 200 OK (Mock API Response)
+    end
+
+    %% Phase 4: Webhook & Audit
+    rect rgb(255, 240, 245)
+        Note over Mule, UI: Phase 4: Callback & Audit Logging
+        Mule->>Node: POST /api/webhook/step-complete (Success/Fail)
+        Node->>DB: UPDATE execution_steps status = 'COMPLETED'
+        Node->>DB: INSERT INTO audit_logs (Payload & Action)
+        Node-->>Mule: 200 OK
+        
+        UI->>Node: Poll /api/intents/latest/steps
+        Node-->>UI: Return updated graph
+        UI-->>User: Visual transition (Yellow -> Green)
+    end
+
+
+2. Entity Relationship Diagram (ERD)
+
+This diagram maps out the strict PostgreSQL schema and how intents tie to their subsequent steps and immutable audit logs.
+
+erDiagram
+    INTENTS {
+        int id PK
+        text prompt
+        varchar status "PENDING, FAILED, COMPLETED"
+        timestamp created_at
+    }
+
+    EXECUTION_STEPS {
+        int id PK
+        int intent_id FK
+        int step_order
+        varchar target_system "e.g., MULE_BILLING"
+        varchar action_name "e.g., issue_refund"
+        jsonb payload
+        varchar status "PENDING, APPROVED, RUNNING, COMPLETED"
+        text error_message
+        timestamp updated_at
+    }
+
+    AUDIT_LOGS {
+        int id PK
+        int intent_id FK
+        int step_id FK
+        varchar actor "SYSTEM, AI, OPERATOR"
+        text action_taken
+        jsonb payload_snapshot
+        timestamp timestamp
+    }
+
+    %% Relationships
+    INTENTS ||--o{ EXECUTION_STEPS : "is broken down into"
+    INTENTS ||--o{ AUDIT_LOGS : "generates intent-level logs"
+    EXECUTION_STEPS ||--o{ AUDIT_LOGS : "generates step-level logs"
